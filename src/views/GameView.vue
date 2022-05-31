@@ -1,14 +1,16 @@
 <template>
-  <MenuView />
+  <div class="home">
+    <GridHeader />
+  </div>
 </template>
 
 <script lang="ts">
 import { Options, Vue } from "vue-class-component";
-import MenuView from "@/views/MenuView.vue"; // @ is an alias to /src
+import GridHeader from "@/components/GridHeader.vue"; // @ is an alias to /src
 
 @Options({
   components: {
-    MenuView,
+    GridHeader,
   },
 })
 export default class GameView extends Vue {}
