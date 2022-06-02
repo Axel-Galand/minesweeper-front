@@ -6,7 +6,7 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
+import * as Vue from "vue";
 
 const GridHeader = Vue.extend({
   data() {
@@ -24,9 +24,6 @@ const GridHeader = Vue.extend({
 
   mounted() {
     this.incrementTimer();
-    this.timer = setInterval(() => {
-      this.timer++;
-    }, 1000);
   },
 });
 

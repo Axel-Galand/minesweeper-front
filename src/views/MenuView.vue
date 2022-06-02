@@ -5,13 +5,11 @@
 </template>
 
 <script lang="ts">
-import { Options, Vue } from "vue-class-component";
-import GameView from "@/views/GameView.vue"; // @ is an alias to /src
+import * as Vue from "vue";
 
-@Options({
-  components: {
-    GameView,
-  },
-})
-export default class MenuView extends Vue {}
+const MenuView = Vue.extend({
+
+});
+
+export default MenuView;
 </script>
