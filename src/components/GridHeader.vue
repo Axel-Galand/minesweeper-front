@@ -1,31 +1,28 @@
 <template>
   <div class="grid-header">
-    <span class="header-game-id">Game ID: {{ gameId }}</span>
-    <span class="header-timer">{{ timer }}</span>
+    <!-- <span class="header-game-id">Game ID: {{ gameId }}</span> -->
+    <!-- <span class="header-timer">{{ timer }}</span> -->
   </div>
 </template>
 
 <script lang="ts">
-import * as Vue from "vue";
+import { defineComponent } from "vue";
 
-const GridHeader = Vue.extend({
+export default defineComponent({
+  // type inference enabled
+  props: {
+    name: String,
+    msg: { type: String, required: true },
+  },
   data() {
     return {
-      gameId: 69420,
-      timer: 0,
+      count: 1,
     };
   },
-
-  methods: {
-    incrementTimer() {
-      this.timer++;
-    },
-  },
-
   mounted() {
-    this.incrementTimer();
+    this.name; // type: string | undefined
+    this.msg; // type: string
+    this.count; // type: number
   },
 });
-
-export default GridHeader;
 </script>
