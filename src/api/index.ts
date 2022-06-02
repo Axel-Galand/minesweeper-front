@@ -22,34 +22,40 @@ export default class Networking {
   private _ws: WebSocket;
   private pendingResolves: Array<PendingMessage>;
 
+  public init: Promise<void>;
+
   constructor(path = "ws://localhost:8090") {
     this.messageId = 0;
     this.pendingResolves = new Array<PendingMessage>();
     this._ws = new WebSocket(path);
-    this._ws.addEventListener("open", () => {
-      console.log("websocket opened with " + path);
-
-      this.play({ x: 0, y: 1 }, { x: 5, y: 1 }).then((e) => {
-        console.log(e);
+    this.init = new Promise((resolve) => {
+      this._ws.addEventListener("open", () => {
+        resolve();
+        console.log("websocket opened with " + path);
       });
-    });
 
-    this._ws.addEventListener("message", (event) => {
-      const parsed: NetworkMessage = JSON.parse(event.data);
-      //Check if answer to a pending message
-      if (this.pendingResolves[parsed.id]) {
-        if (parsed.error) {
-          this.pendingResolves[parsed.id].reject(parsed);
-        } else {
-          this.pendingResolves[parsed.id].resolve(parsed);
+      this._ws.addEventListener("message", (event) => {
+        const parsed: NetworkMessage = JSON.parse(event.data);
+        //Check if answer to a pending message
+        if (this.pendingResolves[parsed.id]) {
+          if (parsed.error) {
+            this.pendingResolves[parsed.id].reject(parsed);
+          } else {
+            this.pendingResolves[parsed.id].resolve(parsed);
+          }
+          delete this.pendingResolves[parsed.id];
         }
-        delete this.pendingResolves[parsed.id];
-      }
+      });
     });
   }
 
   private sendMessage(data: unknown, action: string): Promise<NetworkMessage> {
     return new Promise((resolve, reject) => {
+      if (this._ws.readyState != 1) {
+        throw new Error(
+          "Websocket not initialized. Please await for Networking.init"
+        );
+      }
       this.messageId++;
       this._ws.send(JSON.stringify({ data, action, id: this.messageId }));
       this.pendingResolves[this.messageId] = {
