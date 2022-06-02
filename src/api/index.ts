@@ -1,19 +1,20 @@
 interface Coordinates {
   x: number;
   y: number;
-  value?: boolean;
+  value?: number;
 }
 
 interface NetworkMessage {
   action?: string;
+  error?: string;
   data: unknown;
-  requestId: number;
+  id: number;
 }
 
 interface PendingMessage {
   id: number;
   resolve: (value: NetworkMessage | PromiseLike<NetworkMessage>) => void;
-  reject?: (reason?: unknown) => void;
+  reject: (reason?: unknown) => void;
 }
 
 export default class Networking {
@@ -26,15 +27,22 @@ export default class Networking {
     this.pendingResolves = new Array<PendingMessage>();
     this._ws = new WebSocket(path);
     this._ws.addEventListener("open", () => {
-      //this._ws.send('{"data":"yes"}');
+      console.log("websocket opened with " + path);
+
+      this.play({ x: 0, y: 1 }, { x: 5, y: 1 }).then((e) => {
+        console.log(e);
+      });
     });
 
-    // Écouter les messages
     this._ws.addEventListener("message", (event) => {
-      console.log("Voici un message du serveur", event.data);
-      const parsed = JSON.parse(event.data);
+      const parsed: NetworkMessage = JSON.parse(event.data);
+      //Check if answer to a pending message
       if (this.pendingResolves[parsed.id]) {
-        this.pendingResolves[parsed.id].resolve(parsed.data);
+        if (parsed.error) {
+          this.pendingResolves[parsed.id].reject(parsed);
+        } else {
+          this.pendingResolves[parsed.id].resolve(parsed);
+        }
         delete this.pendingResolves[parsed.id];
       }
     });
@@ -58,14 +66,7 @@ export default class Networking {
    * @returns Promise<Array<Coordinates>>
    */
   async play(...test: Array<Coordinates>): Promise<Array<Coordinates>> {
-    return new Promise((resolve, reject) => {
-      this.sendMessage(test, "discover")
-        .then((result: NetworkMessage) => {
-          resolve(result.data as Array<Coordinates>);
-        })
-        .catch(() => {
-          reject(test);
-        });
-    });
+    return (await this.sendMessage(test, "discover"))
+      .data as Array<Coordinates>;
   }
 }
